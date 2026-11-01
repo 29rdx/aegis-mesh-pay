@@ -1,6 +1,7 @@
 # AegisMeshPay 🛡️
 ### Zero-Connectivity Cryptographic Mesh Payment Gateway with Hardware Vouchers & Multi-Hop Relay
 
+[![AegisMesh Gateway CI](https://github.com/29rdx/aegis-mesh-pay/actions/workflows/ci.yml/badge.svg)](https://github.com/29rdx/aegis-mesh-pay/actions/workflows/ci.yml)
 [![Spring Boot: 3.3.4](https://img.shields.io/badge/Spring_Boot-3.3.4-brightgreen.svg?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Java: 17+](https://img.shields.io/badge/Java-17%2B-orange.svg?logo=openjdk&logoColor=white)](https://openjdk.org)
 [![Security: Hybrid RSA + AES--256--GCM + ECDSA](https://img.shields.io/badge/Security-RSA--2048%20%7C%20AES--256--GCM%20%7C%20ECDSA-blue.svg)](https://en.wikipedia.org/wiki/Galois/Counter_Mode)
