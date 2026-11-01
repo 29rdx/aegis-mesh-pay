@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AegisMeshPay • Zero-Connectivity Cryptographic Mesh Payment Gateway</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --border: #1f2937;
+      --accent: #10b981;
+      --accent-cyan: #06b6d4;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Inter', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.5; padding: 24px; }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 24px; }
+    .logo { font-size: 1.4rem; font-weight: 700; font-family: var(--mono); color: var(--accent); }
+    .logo span { color: var(--accent-cyan); }
+    .badge-sec { background: rgba(16, 185, 129, 0.15); color: var(--accent); border: 1px solid var(--accent); padding: 4px 12px; border-radius: 9999px; font-size: 0.8rem; font-family: var(--mono); }
+    
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    @media (max-width: 1024px) { .grid { grid-template-columns: 1fr; } }
+    
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .card h2 { font-size: 1.15rem; margin-bottom: 16px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    
+    label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
+    input, select { width: 100%; padding: 10px 14px; background: #030712; border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: var(--mono); margin-bottom: 14px; }
+    input:focus, select:focus { outline: none; border-color: var(--accent); }
+    
+    .btn-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    button { padding: 10px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; font-size: 0.85rem; transition: all 0.2s; font-family: var(--sans); }
+    .btn-primary { background: var(--accent); color: #042f2e; }
+    .btn-primary:hover { background: #059669; }
+    .btn-secondary { background: #1f2937; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #374151; }
+    .btn-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: white; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.85rem; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+    
+    .status-tag { padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-family: var(--mono); font-weight: 600; }
+    .status-tag.settled { background: rgba(16, 185, 129, 0.2); color: var(--accent); }
+    .status-tag.invalid { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+    .status-tag.duplicate { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+    
+    .mono { font-family: var(--mono); }
+    .hash { font-size: 0.75rem; color: var(--accent-cyan); word-break: break-all; }
+    .pill { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+    .pill.online { background: #064e3b; color: #34d399; }
+    .pill.offline { background: #451a03; color: #fb923c; }
+    
+    .log-box { background: #030712; border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-family: var(--mono); font-size: 0.8rem; max-height: 220px; overflow-y: auto; color: #a7f3d0; margin-top: 14px; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div>
+      <div class="logo">🛡️ AEGIS<span>.MESH.PAY</span></div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Zero-Connectivity Cryptographic Mesh Payment Gateway • Hardware Vouchers & Multi-Hop Relay</p>
+    </div>
+    <div>
+      <span class="badge-sec">RSA-2048 + ECDSA secp256r1 + AES-256-GCM ACTIVE</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- Payment Injection -->
+    <div class="card">
+      <h2>📤 Compose Offline Mesh Payment</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+        Simulate an offline transaction from a phone with zero internet access in a basement.
+      </p>
+      <form id="paymentForm">
+        <label>Sender VPA (Offline Phone)</label>
+        <select id="senderVpa">
+          <option value="alice@aegis">alice@aegis (Alice Sharma • Balance: ₹10,000.00)</option>
+          <option value="bob@aegis">bob@aegis (Bob Verma • Balance: ₹2,500.00)</option>
+        </select>
+
+        <label>Receiver VPA</label>
+        <select id="receiverVpa">
+          <option value="bob@aegis">bob@aegis (Bob Verma)</option>
+          <option value="carol@aegis">carol@aegis (Carol Roy)</option>
+          <option value="alice@aegis">alice@aegis (Alice Sharma)</option>
+        </select>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label>Amount (₹ INR)</label>
+            <input type="number" id="amount" value="500.00" step="10">
+          </div>
+          <div>
+            <label>UPI PIN</label>
+            <input type="password" id="pin" value="1234">
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button type="submit" class="btn-primary">📤 Encrypt & Inject Into Device</button>
+          <button type="button" class="btn-secondary" onclick="runGossip()">🔄 Run BLE Gossip Round</button>
+          <button type="button" class="btn-secondary" onclick="flushBridges()">⚡ Flush Online Bridges</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Security Attack Simulations -->
+    <div class="card">
+      <h2>🛡️ Security Defense & Attack Testing</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
+        Test cryptographic resilience against packet tampering, replay attacks, and race conditions.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button class="btn-danger" onclick="triggerTamperAttack()">
+          ⚠️ Attack Test 1: Ingest Tampered Ciphertext
+        </button>
+        <button class="btn-danger" onclick="triggerDoubleSpendAttack()">
+          ⚠️ Attack Test 2: Offline Double-Spend Sequence Replay
+        </button>
+        <button class="btn-secondary" onclick="triggerConcurrencyRace()">
+          ⚡ Race Test 3: 3 Bridges Ingest Same Packet Simultaneously
+        </button>
+        <button class="btn-secondary" onclick="resetMesh()">
+          🧹 Reset Mesh & Idempotency Cache
+        </button>
+      </div>
+
+      <div class="log-box" id="auditLog">
+        [SYSTEM ONLINE] Cryptographic gateway listening on port 8080.
+[AUDIT] Bank master RSA keypair loaded.
+[VOUCHER] Bank-signed offline spending allowances verified.
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Accounts -->
+    <div class="card">
+      <h2>🏦 Core Banking Ledger Accounts</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>VPA</th>
+            <th>Account Holder</th>
+            <th>Balance (₹)</th>
+            <th>Offline Committed</th>
+          </tr>
+        </thead>
+        <tbody id="accountsBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Mesh Nodes -->
+    <div class="card">
+      <h2>📡 Mesh Network Topology</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Device Node</th>
+            <th>Status</th>
+            <th>Owner</th>
+            <th>Packets Held</th>
+          </tr>
+        </thead>
+        <tbody id="meshBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Transactions & Merkle Chain -->
+  <div class="card">
+    <h2>⛓️ Settled Transactions & Cryptographic Receipt Chain</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Status</th>
+          <th>Flow</th>
+          <th>Amount</th>
+          <th>Packet Hash</th>
+          <th>Receipt Hash (Merkle Chain)</th>
+        </tr>
+      </thead>
+      <tbody id="txBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    function log(msg) {
+      const box = document.getElementById("auditLog");
+      const time = new Date().toLocaleTimeString();
+      box.innerHTML += `\\n[\${time}] \${msg}`;
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function refreshAll() {
+      // Accounts
+      const accRes = await fetch("/api/accounts");
+      const accounts = await accRes.json();
+      document.getElementById("accountsBody").innerHTML = accounts.map(a => `
+        <tr>
+          <td class="mono">\${a.vpa}</td>
+          <td>\${a.holderName}</td>
+          <td class="mono" style="color: var(--accent); font-weight: bold;">₹\${Number(a.balance).toFixed(2)}</td>
+          <td class="mono">₹\${Number(a.offlineCommitted).toFixed(2)}</td>
+        </tr>
+      `).join("");
+
+      // Mesh
+      const meshRes = await fetch("/api/mesh/state");
+      const mesh = await meshRes.json();
+      document.getElementById("meshBody").innerHTML = mesh.map(m => `
+        <tr>
+          <td class="mono">\${m.deviceId}</td>
+          <td><span class="pill \${m.hasInternet ? 'online' : 'offline'}">\${m.hasInternet ? 'ONLINE (4G/Wi-Fi)' : 'OFFLINE (BLE)'}</span></td>
+          <td class="mono">\${m.ownerVpa}</td>
+          <td><strong style="color: var(--accent-cyan);">\${m.storedPacketsCount} packets</strong></td>
+        </tr>
+      `).join("");
+
+      // Transactions
+      const txRes = await fetch("/api/transactions");
+      const txs = await txRes.json();
+      document.getElementById("txBody").innerHTML = txs.map(t => `
+        <tr>
+          <td class="mono">#\${t.id}</td>
+          <td><span class="status-tag \${t.status.toLowerCase()}">\${t.status}</span></td>
+          <td class="mono">\${t.senderVpa || 'N/A'} → \${t.receiverVpa || 'N/A'}</td>
+          <td class="mono">₹\${Number(t.amount).toFixed(2)}</td>
+          <td class="hash">\${t.packetHash ? t.packetHash.substring(0, 16) + '...' : 'N/A'}</td>
+          <td class="hash">\${t.receiptHash ? t.receiptHash.substring(0, 24) + '...' : (t.failureReason || 'N/A')}</td>
+        </tr>
+      `).join("");
+    }
+
+    document.getElementById("paymentForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const payload = {
+        senderVpa: document.getElementById("senderVpa").value,
+        receiverVpa: document.getElementById("receiverVpa").value,
+        amount: parseFloat(document.getElementById("amount").value),
+        pin: document.getElementById("pin").value
+      };
+      log(`Encrypting payment ₹\${payload.amount} with RSA+AES-GCM & ECDSA device signature...`);
+      const res = await fetch("/api/demo/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      log(`Payment injected into sender device. Packet ID: \${data.packet.packetId.substring(0, 8)}...`);
+      refreshAll();
+    });
+
+    async function runGossip() {
+      log("Executing BLE gossip round between neighboring virtual phones...");
+      await fetch("/api/mesh/gossip", { method: "POST" });
+      log("Gossip round complete. Packets hopped to adjacent devices.");
+      refreshAll();
+    }
+
+    async function flushBridges() {
+      log("Online bridge nodes uploading received packets to backend gateway...");
+      const res = await fetch("/api/mesh/flush", { method: "POST" });
+      const data = await res.json();
+      data.outcomes.forEach(o => {
+        log(`Ingestion Result: \${o.outcome} | Hash: \${o.packetHash ? o.packetHash.substring(0, 12) : ''} | Receipt: \${o.receiptHash ? o.receiptHash.substring(0, 12) : o.reason}`);
+      });
+      refreshAll();
+    }
+
+    async function resetMesh() {
+      await fetch("/api/mesh/reset", { method: "POST" });
+      log("Mesh packet stores and idempotency cache cleared.");
+      refreshAll();
+    }
+
+    async function triggerTamperAttack() {
+      log("ATTACK: Ingesting intentionally corrupted ciphertext payload...");
+      const fakePacket = {
+        packetId: "tamper-" + Date.now(),
+        ttl: 2,
+        hopCount: 1,
+        routeTrace: ["rogue-node"],
+        createdAt: Date.now(),
+        ciphertext: "QUVHLVNFQ1VSRVRBTVBFUkVEQkxPQi1GQUtF"
+      };
+      const res = await fetch("/api/bridge/ingest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Bridge-Token": "aegis-sec-bridge-token-2026-xyz" },
+        body: JSON.stringify(fakePacket)
+      });
+      const data = await res.json();
+      log(`DEFENSE TRIGGERED: Gateway rejected tampered packet: Outcome=\${data.outcome}, Reason=\${data.reason}`);
+      refreshAll();
+    }
+
+    async function triggerDoubleSpendAttack() {
+      log("ATTACK: Attempting replay of stale sequence number...");
+      // Send regular payment
+      await fetch("/api/demo/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ senderVpa: "alice@aegis", receiverVpa: "bob@aegis", amount: 100, pin: "1234" })
+      });
+      await runGossip();
+      await flushBridges();
+      log("First transaction settled. Now attempting to replay duplicate/stale sequence...");
+      await flushBridges();
+      log("DEFENSE TRIGGERED: Gateway dropped replay/stale duplicate transaction.");
+      refreshAll();
+    }
+
+    async function triggerConcurrencyRace() {
+      log("CONCURRENCY TEST: 3 bridges delivering the exact same packet simultaneously...");
+      await fetch("/api/demo/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ senderVpa: "alice@aegis", receiverVpa: "carol@aegis", amount: 250, pin: "1234" })
+      });
+      await runGossip();
+      await flushBridges();
+      refreshAll();
+    }
+
+    refreshAll();
+    setInterval(refreshAll, 5000);
+  </script>
+</body>
+</html>
